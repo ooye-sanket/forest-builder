@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2d5a3d">
+  <meta name="description" content="Build and grow your peaceful forest">
+  <title>Forest Builder - Grow Your Trees</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+    <p>Loading your forest...</p>
+  </div>
+
+  <!-- Auth Screen -->
+  <div id="authScreen" class="auth-screen hidden">
+    <div class="auth-container">
+      <h1>🌳 Forest Builder</h1>
+      <p class="subtitle">Grow your peaceful forest</p>
+      
+      <div id="loginForm" class="auth-form">
+        <h2>Welcome Back</h2>
+        <input type="email" id="loginEmail" placeholder="Email" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button onclick="login()" class="btn-primary">Login</button>
+        <p class="switch-auth">New here? <span onclick="switchToRegister()">Create Account</span></p>
+      </div>
+
+      <div id="registerForm" class="auth-form hidden">
+        <h2>Create Account</h2>
+        <input type="text" id="regUsername" placeholder="Username" required>
+        <input type="email" id="regEmail" placeholder="Email" required>
+        <input type="password" id="regPassword" placeholder="Password" required>
+        <button onclick="register()" class="btn-primary">Create Account</button>
+        <p class="switch-auth">Have account? <span onclick="switchToLogin()">Login</span></p>
+      </div>
+
+      <div id="authError" class="error-message hidden"></div>
+    </div>
+  </div>
+
+  <!-- Main Game Screen -->
+  <div id="gameScreen" class="game-screen hidden">
+    <!-- Header -->
+    <header class="game-header">
+      <div class="user-info">
+        <span id="username">Player</span>
+        <div class="coins">
+          <span class="coin-icon">🪙</span>
+          <span id="coinCount">100</span>
+        </div>
+      </div>
+      <button onclick="openMenu()" class="menu-btn">☰</button>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat">
+        <span class="stat-label">Trees Grown</span>
+        <span id="treesGrown" class="stat-value">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Plots</span>
+        <span id="plotsUnlocked" class="stat-value">4</span>
+      </div>
+    </div>
+
+    <!-- Main Game Area -->
+    <div class="game-container">
+      <!-- Plot Selection -->
+      <div class="plot-selector">
+        <button class="plot-btn active" data-plot="0" onclick="selectPlot(0)">Plot 1</button>
+        <button class="plot-btn" data-plot="1" onclick="selectPlot(1)">Plot 2</button>
+        <button class="plot-btn" data-plot="2" onclick="selectPlot(2)">Plot 3</button>
+        <button class="plot-btn" data-plot="3" onclick="selectPlot(3)">Plot 4</button>
+      </div>
+
+      <!-- Canvas Area -->
+      <div class="canvas-container">
+        <canvas id="forestCanvas"></canvas>
+        <div id="weatherOverlay" class="weather-overlay"></div>
+      </div>
+
+      <!-- Tree Grid (6 positions per plot) -->
+      <div class="tree-grid" id="treeGrid">
+        <div class="tree-slot" data-position="0" onclick="handleSlotClick(0)">
+          <div class="empty-slot">+</div>
+        </div>
+        <div class="tree-slot" data-position="1" onclick="handleSlotClick(1)">
+          <div class="empty-slot">+</div>
+        </div>
+        <div class="tree-slot" data-position="2" onclick="handleSlotClick(2)">
+          <div class="empty-slot">+</div>
+        </div>
+        <div class="tree-slot" data-position="3" onclick="handleSlotClick(3)">
+          <div class="empty-slot">+</div>
+        </div>
+        <div class="tree-slot" data-position="4" onclick="handleSlotClick(4)">
+          <div class="empty-slot">+</div>
+        </div>
+        <div class="tree-slot" data-position="5" onclick="handleSlotClick(5)">
+          <div class="empty-slot">+</div>
+        </div>
+      </div>
+
+      <!-- Action Panel -->
+      <div class="action-panel">
+        <button onclick="openPlantModal()" class="action-btn plant-btn">
+          <span class="btn-icon">🌱</span>
+          <span>Plant</span>
+        </button>
+        <button onclick="waterAllTrees()" class="action-btn water-btn">
+          <span class="btn-icon">💧</span>
+          <span>Water All</span>
+        </button>
+        <button onclick="openMarket()" class="action-btn market-btn">
+          <span class="btn-icon">🏪</span>
+          <span>Market</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plant Seed Modal -->
+  <div id="plantModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Plant a Seed</h2>
+      <p>Selected Position: <span id="selectedPosition">-</span></p>
+      
+      <div class="seed-selection">
+        <div class="seed-card" onclick="selectSeed('apple')">
+          <div class="seed-icon">🍎</div>
+          <h3>Apple</h3>
+          <p class="seed-price">Free</p>
+        </div>
+        <div class="seed-card" onclick="selectSeed('mango')">
+          <div class="seed-icon">🥭</div>
+          <h3>Mango</h3>
+          <p class="seed-price">20 🪙</p>
+        </div>
+        <div class="seed-card" onclick="selectSeed('orange')">
+          <div class="seed-icon">🍊</div>
+          <h3>Orange</h3>
+          <p class="seed-price">30 🪙</p>
+        </div>
+        <div class="seed-card" onclick="selectSeed('cherry')">
+          <div class="seed-icon">🍒</div>
+          <h3>Cherry</h3>
+          <p class="seed-price">50 🪙</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+        <button onclick="plantSelectedSeed()" class="btn-primary">Plant</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tree Detail Modal -->
+  <div id="treeModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="treeTitle">Tree Details</h2>
+      
+      <div class="tree-details">
+        <div class="detail-row">
+          <span>Type:</span>
+          <span id="treeType">-</span>
+        </div>
+        <div class="detail-row">
+          <span>Stage:</span>
+          <span id="treeStage">-</span>
+        </div>
+        <div class="detail-row">
+          <span>Health:</span>
+          <div class="progress-bar">
+            <div id="treeHealth" class="progress-fill" style="width: 100%"></div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span>Water:</span>
+          <div class="progress-bar">
+            <div id="treeWater" class="progress-fill water" style="width: 100%"></div>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span>Fruits Ready:</span>
+          <span id="treeFruits">0</span>
+        </div>
+        <div class="detail-row">
+          <span>Next Stage:</span>
+          <span id="treeNextStage">-</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button onclick="waterTree()" class="btn-primary">💧 Water</button>
+        <button onclick="harvestTree()" class="btn-success" id="harvestBtn" disabled>🌾 Harvest</button>
+        <button onclick="closeTreeModal()" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Market Modal -->
+  <div id="marketModal" class="modal hidden">
+    <div class="modal-content large">
+      <h2>🏪 Marketplace</h2>
+      
+      <div class="market-tabs">
+        <button class="tab-btn active" onclick="switchMarketTab('sell')">Sell Fruits</button>
+        <button class="tab-btn" onclick="switchMarketTab('buy')">Buy Seeds</button>
+      </div>
+
+      <div id="sellTab" class="market-tab">
+        <div id="fruitInventory" class="fruit-inventory">
+          <p class="empty-message">No fruits to sell yet. Harvest your trees!</p>
+        </div>
+      </div>
+
+      <div id="buyTab" class="market-tab hidden">
+        <div class="seed-shop">
+          <div class="shop-item">
+            <span>🥭 Mango Seed</span>
+            <button onclick="buySeed('mango', 20)" class="btn-primary">Buy - 20 🪙</button>
+          </div>
+          <div class="shop-item">
+            <span>🍊 Orange Seed</span>
+            <button onclick="buySeed('orange', 30)" class="btn-primary">Buy - 30 🪙</button>
+          </div>
+          <div class="shop-item">
+            <span>🍒 Cherry Seed</span>
+            <button onclick="buySeed('cherry', 50)" class="btn-primary">Buy - 50 🪙</button>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="closeModal()" class="btn-secondary">Close</button>
+    </div>
+  </div>
+
+  <!-- Menu Modal -->
+  <div id="menuModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Menu</h2>
+      <div class="menu-options">
+        <button onclick="toggleNotifications()" class="menu-btn">🔔 Notifications</button>
+        <button onclick="showStats()" class="menu-btn">📊 Statistics</button>
+        <button onclick="logout()" class="menu-btn logout">🚪 Logout</button>
+      </div>
+      <button onclick="closeModal()" class="btn-secondary">Close</button>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Scripts -->
+  <script src="js/storage.js"></script>
+  <script src="js/canvas.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
